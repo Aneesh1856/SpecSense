@@ -1,65 +1,125 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import UploadZone from "@/components/UploadZone";
+import TeamForm from "@/components/TeamForm";
+import ProgressPanel from "@/components/ProgressPanel";
+import OutputsPanel from "@/components/OutputsPanel";
+import ChatPanel from "@/components/ChatPanel";
+import { Activity, FileOutput, MessageSquare } from "lucide-react";
 
 export default function Home() {
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [filename, setFilename] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"progress" | "outputs" | "chat">("progress");
+  const [pipelineRunning, setPipelineRunning] = useState(false);
+  const [pipelineFinished, setPipelineFinished] = useState(false);
+
+  const handleUploadSuccess = (id: string, name: string) => {
+    setJobId(id);
+    setFilename(name);
+    setPipelineRunning(false);
+    setPipelineFinished(false);
+    setActiveTab("progress");
+  };
+
+  const handleRunPipeline = () => {
+    setPipelineRunning(true);
+    setPipelineFinished(false);
+    setActiveTab("progress");
+  };
+
+  const handlePipelineComplete = () => {
+    setPipelineFinished(true);
+    setPipelineRunning(false);
+    // Switch to outputs tab after a short delay so user can see 100% and confetti
+    setTimeout(() => {
+      setActiveTab("outputs");
+    }, 2500);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="min-h-screen bg-[#0A0A0A] text-gray-200 p-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Column: Upload & Config */}
+        <div className="lg:col-span-5 space-y-6 flex flex-col">
+          <UploadZone onUploadSuccess={handleUploadSuccess} />
+          
+          <div className="flex-grow">
+            <TeamForm 
+              jobId={jobId} 
+              onRunPipeline={handleRunPipeline} 
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
-    </div>
+
+        {/* Right Column: Execution & Results */}
+        <div className="lg:col-span-7 bg-[#111111] border border-white/5 rounded-2xl shadow-xl flex flex-col h-[85vh]">
+          
+          {/* Header/Tabs */}
+          <div className="flex items-center border-b border-white/10 p-2">
+            <button
+              onClick={() => setActiveTab("progress")}
+              className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                activeTab === "progress" 
+                  ? "bg-[#1A1A1A] text-purple-400 border border-white/5 shadow-sm" 
+                  : "text-gray-500 hover:text-gray-300 hover:bg-[#151515]"
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>Pipeline Status</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("outputs")}
+              className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                activeTab === "outputs" 
+                  ? "bg-[#1A1A1A] text-purple-400 border border-white/5 shadow-sm" 
+                  : "text-gray-500 hover:text-gray-300 hover:bg-[#151515]"
+              }`}
+            >
+              <FileOutput className="w-4 h-4" />
+              <span>Generated Artifacts</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("chat")}
+              className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ml-auto ${
+                activeTab === "chat" 
+                  ? "bg-purple-600/10 text-purple-400 border border-purple-500/20 shadow-sm" 
+                  : "text-gray-500 hover:text-purple-400 hover:bg-[#151515]"
+              }`}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>SpecBot</span>
+            </button>
+          </div>
+
+          {/* Panel Content */}
+          <div className="flex-grow p-6 overflow-hidden">
+            {activeTab === "progress" && (
+              <ProgressPanel 
+                jobId={jobId} 
+                pipelineRunning={pipelineRunning} 
+                onComplete={handlePipelineComplete} 
+              />
+            )}
+            
+            {activeTab === "outputs" && (
+              <OutputsPanel 
+                jobId={jobId} 
+                pipelineFinished={pipelineFinished} 
+              />
+            )}
+
+            {activeTab === "chat" && (
+              <ChatPanel 
+                jobId={jobId} 
+              />
+            )}
+          </div>
+        </div>
+
+      </div>
+    </main>
   );
 }
