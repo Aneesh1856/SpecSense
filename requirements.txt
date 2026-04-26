@@ -5,17 +5,18 @@ python-multipart==0.0.9
 pdfplumber==0.11.0
 PyMuPDF==1.24.1
 python-docx==1.1.0
-sentence-transformers==2.7.0
-faiss-cpu==1.8.0
-transformers==4.40.1
-bitsandbytes==0.43.1
-accelerate==0.29.3
-gradio==4.28.3
-openpyxl==3.1.2
+sentence-transformers
+faiss-cpu
+transformers
+bitsandbytes
+accelerate
+gradio
+openpyxl
 
 # --- PyTorch ---
 # For CPU-only HF Spaces (Free Tier), use:
-torch==2.3.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.3.0+cpu
 
 # NOTE: If your HF Space has a GPU enabled (e.g. T4 small), comment the line above and uncomment the line below:
 # torch==2.3.0
