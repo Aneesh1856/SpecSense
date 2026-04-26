@@ -6,5 +6,5 @@ outputs/
 *.docx
 venv/
 temp/
-frontend/
+# frontend/ (removed to include in main repo)
 scratch/
