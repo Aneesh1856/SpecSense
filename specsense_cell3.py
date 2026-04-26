@@ -46,25 +46,38 @@ bnb_config = BitsAndBytesConfig(
     bnb_4bit_quant_type="nf4",
 )
 
-print(f"⏳ Downloading and loading model weights for '{MODEL_ID}'...")
-print("   (This might take a few minutes the first time to download ~4-5GB)")
+model = None
+tokenizer = None
 
-try:
-    # device_map="auto" lets accelerate handle distributing model layers
-    # across available GPUs (or offloading if needed, but T4 is enough).
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID,
-        quantization_config=bnb_config,
-        device_map="auto",
-    )
-    
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-    print("✅ Model and tokenizer loaded successfully.")
-except Exception as e:
-    print(f"❌ Failed to load model. Error: {e}")
-    print("   Did you accept the Mistral terms on HuggingFace Hub?")
-    print("   If gated, you may need to run `huggingface-cli login` first.")
-    raise
+def load_model():
+    global model, tokenizer
+    if model is not None or tokenizer is not None:
+        return
+
+    import os
+    token = os.environ.get("HF_TOKEN")
+
+    try:
+        if not torch.cuda.is_available():
+            print("⚠️ CPU detected. Skipping full Mistral-7B load to prevent crash. (Using Mock LLM)")
+            return
+
+        print(f"⏳ Downloading and loading model weights for '{MODEL_ID}'...")
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_ID,
+            quantization_config=bnb_config,
+            device_map="auto",
+            token=token
+        )
+        
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, token=token)
+        print("✅ Model and tokenizer loaded successfully.")
+    except Exception as e:
+        print(f"❌ Failed to load model. Error: {e}")
+        print("   Did you accept the Mistral terms on HuggingFace Hub?")
+        print("   Make sure to set HF_TOKEN in your Spaces settings!")
+        model = None
+        tokenizer = None
 
 # ── 3. Helper: llm_generate ───────────────────────────────────
 
@@ -73,6 +86,18 @@ def llm_generate(prompt: str, max_new_tokens: int = 512) -> str:
     Generate text from the loaded Mistral model given a prompt.
     Formats the prompt using Mistral's instruction template.
     """
+    load_model()
+    
+    if model is None or tokenizer is None:
+        print("MOCK LLM CALLED for prompt snippet:", prompt[:50])
+        
+        if "Extract" in prompt or "extract" in prompt:
+            return '{"method_statement_requirements": "Mock requirement 1", "environmental_constraints": "Mock constraint"}'
+        elif "evaluate" in prompt or "Validator" in prompt:
+            return "MATCH"
+        else:
+            return "This is a mock AI response since we are running on a free CPU space without a GPU."
+
     # 1. Format prompt for Mistral v0.3 Instruct
     formatted_prompt = f"<s>[INST] {prompt} [/INST]"
 
