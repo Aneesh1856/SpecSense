@@ -12,11 +12,12 @@ bitsandbytes
 accelerate
 gradio
 openpyxl
+sse-starlette
 
 # --- PyTorch ---
 # For CPU-only HF Spaces (Free Tier), use:
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.3.0+cpu
+torch>=2.4.0
 
 # NOTE: If your HF Space has a GPU enabled (e.g. T4 small), comment the line above and uncomment the line below:
 # torch==2.3.0

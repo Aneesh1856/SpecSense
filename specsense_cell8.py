@@ -6,6 +6,7 @@
 
 import gradio as gr
 from typing import List, Dict, Any
+from specsense_cell3 import llm_generate
 
 # ── 1. SpecBot Launch Function ────────────────────────────────
 print("═" * 60)
