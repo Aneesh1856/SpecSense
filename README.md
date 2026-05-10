@@ -29,8 +29,3 @@ Every fact extracted by the LLM contains a `verbatim_snippet`. The Validator cro
 - **Grounding Score** = (Verified Facts / Total Extracted Facts) * 100
 - **Hallucination Removal**: If a snippet doesn't exist in the source document, it is immediately discarded and omitted from the Method Statement.
 
-## 👥 Team Information
-- **Team Name**: [Your Team Name]
-- **Team ID**: [Your Team ID]
-- **Leader**: [Leader Name]
-- **Members**: [Member 1], [Member 2], [Member 3]
